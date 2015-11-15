@@ -1,0 +1,13 @@
+{
+  "server": "chat.freenode.net",
+  "port": 6667,
+  "channel": ["#tagpromods","#tpmods"],
+  "botnick": "Smalls",
+  "password": "dootdoot",
+  "prefix": "!",
+
+  "owner": {
+    "nick": "McBride36",
+    "pass": ""
+  }
+}
