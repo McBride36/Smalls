@@ -10,6 +10,10 @@ import json
 import sys
 import re
 import requests
+import arrow
+from json_dict import JSONDict
+
+mods = JSONDict("mods.json")
 
 import praw
 from logbook import Logger
@@ -117,6 +121,9 @@ class RollBot:
 
                 if message_dict['type'] == "PRIVMSG":
                     self.handle_message(hostmask, source_nick, message_dict['destination'], message_dict['message'])
+                    if source_nick not in mods:
+                        mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
+                    mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
 
                 if message_dict['type'] == "001":  # Registration confirmation message
                     self.registered = True
@@ -171,13 +178,6 @@ class RollBot:
     def update_ping_time(self):
         self.last_ping = time.time()
 
-    def reddit_topic(self):
-        r = praw.Reddit("IRC Topic Updater - /u/samwilber")
-        subreddit = r.get_subreddit('tagpro')
-        submission = subreddit.get_hot().next()
-        return "{} {}".format(submission.title, submission.short_link)
-        # return(submission.stickied)
-
     # Commands
 
     @command
@@ -191,7 +191,7 @@ class RollBot:
     @command
     def mods(self, hostmask, source, reply_to, *args):
         if reply_to != "#TPmods":
-            if source == "WOLOWOLO" or source == "justanotheruser" or source == "MRCOW" or source == "LEBRONxJAMES" or source == "defense_bot":
+            if source in ["WOLOWOLO", "justanotheruser", "MRCOW", "LEBRONxJAMES", "defense_bot"]:
                 return "can you not"
             else:
                 return "Sorry! You must use this command in the channel #TPmods | Double click the channel to join."
@@ -238,6 +238,17 @@ class RollBot:
         page = requests.get('http://check.getipintel.net/check.php?ip={}'.format(ipaddress))
         return "{}: chances of naughty IP = {}%".format(source, int(float(re.findall("(\d+(?:.\d+)?)", page.text)[0]) * 100))
 
+    @command
+    def seen(self, hostmask, source, replay_to, *args):
+        name = ' '.join(args)
+        if name not in mods:
+            return "Sorry, haven't seen that weenie"
+        if name in mods:
+            timeseen = arrow.get(mods[name]["date"])
+            formattime = timeseen.format(('YYYY-MM-DD HH:mm:ss ZZ'))
+            humantime = timeseen.humanize()
+            return "{} was seen {} ({}) saying {}".format(name,humantime, formattime, mods[name]["message"])
+
 
     @command
     def optin(self, hostmask, source, reply_to, *args):
@@ -250,6 +261,8 @@ class RollBot:
             duty = "duty"
             if source == "Hootie":
                 duty = "dootie"
+            if source == "n00b":
+                duty = "cutie"
             if ircmsg.find('+{}'.format(source)) != -1:
                 return "You are already on {}, {}.".format(duty, source)
             elif ircmsg.find('{}'.format(source)) != -1:
@@ -317,19 +330,6 @@ class RollBot:
             return "http://support.koalabeast.com/#/appeal"
         else:
             return "http://support.koalabeast.com/#/appeal/{}".format(tickett)
-
-    @command
-    def topic(self, hostmask, source, reply_to, *args):
-        # self.send_raw("Topic #tagpro")
-        # x = self.get_message_from_server()
-        # message = "".join([a if ord(a) < 128 else '' for a in x])
-        # ircmsg = message.strip('\n\r')
-        # if ircmsg.find(' 332 {} '.format(self.nick)) != -1:
-        #    topic = ircmsg.split("#tagpro :")[1]
-        self.send_raw("PRIVMSG ChanServ :TOPIC #tagpro " + u'\u2691' + \
-                      " http://tagpro.gg | http://tagpro.reddit.com | {} | " \
-                      "TagPro Mods have + next to their name. | " \
-                      "Mod calls must be done in #TPmods ".format(self.reddit_topic()) + u'\u2690')
 
     @command
     def ip(self, hostmask, source, reply_to, *args):
