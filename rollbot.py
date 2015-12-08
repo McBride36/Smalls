@@ -121,9 +121,10 @@ class RollBot:
 
                 if message_dict['type'] == "PRIVMSG":
                     self.handle_message(hostmask, source_nick, message_dict['destination'], message_dict['message'])
-                    if source_nick not in mods:
+                    # if source_nick not in mods:
+                    #     mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
+                    if source_nick != "TagChatBot":
                         mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
-                    mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
 
                 if message_dict['type'] == "001":  # Registration confirmation message
                     self.registered = True
@@ -252,9 +253,9 @@ class RollBot:
 
     @command
     def optin(self, hostmask, source, reply_to, *args):
-        if reply_to != "#TagProMods":
+        if reply_to not in ["#TagProMods","#tagprochat"]:
             return "Sorry! This command is not authorized here."
-        else:
+        if reply_to == "#TagproMods":
             self.send_raw("NAMES #TPmods")
             message = self.get_message_from_server()
             ircmsg = message.strip('\n\r')
@@ -270,12 +271,28 @@ class RollBot:
                 return "You are now on {}, {}.".format(duty, source)
             else:
                 return "You are not in #TPmods, {}!".format(source)
+        if reply_to == "#tagprochat":
+            self.send_raw("NAMES #tagprochat")
+            message = self.get_message_from_server()
+            ircmsg = message.strip('\n\r')
+            duty = "duty"
+            if source == "Hootie":
+                duty = "dootie"
+            if source == "n00b":
+                duty = "cutie"
+            if ircmsg.find('+{}'.format(source)) != -1:
+                return "You are already on {}, {}.".format(duty, source)
+            elif ircmsg.find('{}'.format(source)) != -1:
+                self.send_raw("PRIVMSG Chanserv :voice #tagprochat {}".format(source))
+                return "You are now on {}, {}.".format(duty, source)
+            else:
+                return "You are not in #tagprochat, {}!".format(source)
 
     @command
     def optout(self, hostmask, source, reply_to, *args):
-        if reply_to != "#TagProMods":
+        if reply_to not in ["#TagProMods","#tagprochat"]:
             return "Sorry! This command is not authorized here."
-        else:
+        if reply_to == "#TagProMods":
             self.send_raw("NAMES #TPmods")
             message = self.get_message_from_server()
             ircmsg = message.strip('\n\r')
@@ -291,6 +308,22 @@ class RollBot:
                 return "You are already off {}, {}.".format(duty, source)
             else:
                 return "You are not in #TPmods, {}!".format(source)
+        if reply_to == "#tagprochat":
+            self.send_raw("NAMES #tagprochat")
+            message = self.get_message_from_server()
+            ircmsg = message.strip('\n\r')
+            duty = "duty"
+            if source == "Hootie":
+                duty = "dootie"
+            if ircmsg.find('+{}'.format(source)) != -1:
+                self.send_raw("PRIVMSG Chanserv :devoice #tagprochat {}".format(source))
+                if source.lower() in ['cignul9']:
+                    return "{} is a dink".format(source)
+                else: return "You are now off {}, {}.".format(duty, source)
+            elif ircmsg.find('{}'.format(source)) != -1:
+                return "You are already off {}, {}.".format(duty, source)
+            else:
+                return "You are not in #tagprochat, {}!".format(source)
 
     @command
     def op(self, hostmask, source, reply_to, *args):
