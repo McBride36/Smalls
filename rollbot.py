@@ -255,7 +255,7 @@ class RollBot:
     def optin(self, hostmask, source, reply_to, *args):
         if reply_to not in ["#TagProMods","#tagprochat"]:
             return "Sorry! This command is not authorized here."
-        if reply_to == "#TagproMods":
+        if reply_to == "#TagProMods":
             self.send_raw("NAMES #TPmods")
             message = self.get_message_from_server()
             ircmsg = message.strip('\n\r')
