@@ -240,7 +240,7 @@ class RollBot:
         return "{}: chances of naughty IP = {}%".format(source, int(float(re.findall("(\d+(?:.\d+)?)", page.text)[0]) * 100))
 
     @command
-    def seen(self, hostmask, source, replay_to, *args):
+    def seen(self, hostmask, source, reply_to, *args):
         name = ' '.join(args)
         if name not in mods:
             return "Sorry, haven't seen that weenie"

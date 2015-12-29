@@ -7,8 +7,14 @@ class JSONDict(dict):
         self.load_dict()
 
     def __setitem__(self, item, val):
-        super().__setitem__(item, val)
+        super().__setitem__(item.lower(), val)
         self.save_dict()
+        
+    def __getitem__(self, item):
+        return super().__getitem__(item.lower())
+        
+    def __contains__(self, item):
+        return super().__contains__(item.lower())
 
     def save_dict(self):
         with open(self._filename, "w") as f:
@@ -20,6 +26,6 @@ class JSONDict(dict):
             with open(self._filename) as f:
                 data = json.load(f)
                 for k, v in data.items():
-                    super().__setitem__(k, v)
+                    self[k] = v
         except FileNotFoundError:
             pass
