@@ -260,13 +260,11 @@ class RollBot:
             message = self.get_message_from_server()
             ircmsg = message.strip('\n\r')
             duty = "duty"
-            if source == "Hootie":
-                duty = "dootie"
-            if source == "n00b":
-                duty = "cutie"
             if ircmsg.find('+{}'.format(source)) != -1:
+                print(ircmsg.find('+{}'.format(source)))
                 return "You are already on {}, {}.".format(duty, source)
             elif ircmsg.find('{}'.format(source)) != -1:
+                print(ircmsg.find('{}'.format(source)))
                 self.send_raw("PRIVMSG Chanserv :voice #TPmods {}".format(source))
                 return "You are now on {}, {}.".format(duty, source)
             else:
@@ -276,10 +274,6 @@ class RollBot:
             message = self.get_message_from_server()
             ircmsg = message.strip('\n\r')
             duty = "duty"
-            if source == "Hootie":
-                duty = "dootie"
-            if source == "n00b":
-                duty = "cutie"
             if ircmsg.find('+{}'.format(source)) != -1:
                 return "You are already on {}, {}.".format(duty, source)
             elif ircmsg.find('{}'.format(source)) != -1:
