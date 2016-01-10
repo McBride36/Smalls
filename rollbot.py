@@ -212,7 +212,8 @@ class RollBot:
                 if ircmsg.find(' 353 {} '.format(self.nick)) != -1:
                     namelist = ircmsg.split(":")[2]
                     modlist = " ".join(x[1:] for x in namelist.split() if x.startswith('+'))
-                    oplist = " ".join(x[1:] for x in namelist.split() if x.startswith('@'))
+                    #oplist = " ".join(x[1:] for x in namelist.split() if x.startswith('@'))
+                    oplist = ""
                     modmsg = "- " + ' '.join(args)
                     if ' '.join(args) == "":
                         modmsg = ""
