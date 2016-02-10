@@ -237,7 +237,7 @@ class RollBot:
             ipaddress = ipaddress.replace("-", ".")
         else:
             return "Sorry, that's not an IP address!"
-        page = requests.get('http://check.getipintel.net/check.php?ip={}'.format(ipaddress))
+        page = requests.get('http://check.getipintel.net/check.php?ip={}&contact={}'.format(ipaddress,"mcbride3692@gmail.com"))
         return "{}: chances of naughty IP = {}%".format(source, int(float(re.findall("(\d+(?:.\d+)?)", page.text)[0]) * 100))
 
     @command
