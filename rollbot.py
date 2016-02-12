@@ -128,7 +128,7 @@ class RollBot:
                     if source_nick != "TagChatBot":
                         mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
                     while tell_message.contains(Query().target.test(lambda s: s.lower() == source_nick.lower())) and \
-                                    message_dict['destination'] == "#TagProMods":
+                                    message_dict['destination'] == "#TagProChat":
                         name = tell_message.get(Query().target.test(lambda s: s.lower() == source_nick.lower()))
                         date_remove = name['date']
                         self.send_message(source_nick,
@@ -273,15 +273,16 @@ class RollBot:
         # tell_message[target] = {"source":source, "message":message, "date":str(arrow.utcnow())}
         if tell_message.search(Query().target.test(lambda s: s.lower() == target.lower)):
             nick = tell_message.get(Query().target.test(lambda s: s.lower() == target.lower()))
-            if tell_message.count(Query().source.test(lambda s: s.lower() == target.lower())) < 5 and target == nick[
-                'target']:
+            pass
+        if True:
+            nick = tell_message.get(Query().target.test(lambda s: s.lower() == target.lower()))
+            if tell_message.count(Query().target.test(lambda s: s.lower() == target.lower()) & Query().source.test(
+                    lambda s: s.lower() == source.lower())) <= 6:
                 tell_message.insert(
                         {"target": target, "message": message, 'date': str(arrow.utcnow()), 'source': source})
-                return "Ok! I'll pass that on when they become active"
-            else:
-                return "WTF do u need to message them so much for"
-            tell_message.insert({"target": target, "message": message, 'date': str(arrow.utcnow()), 'source': source})
             return "Ok! I'll pass that on when they become active"
+        else:
+            return "U message that person like wayyy too much"
 
     @command
     def optin(self, hostmask, source, reply_to, *args):
