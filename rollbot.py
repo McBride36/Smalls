@@ -3,7 +3,6 @@
 # import os, sys
 
 # Import what's needed.
-import random
 import socket
 import time
 import json
@@ -12,10 +11,13 @@ import re
 import requests
 import arrow
 from json_dict import JSONDict
+from tinydb import TinyDB, Query
+
 
 mods = JSONDict("mods.json")
+tell_message = TinyDB('tell.json')
 
-import praw
+
 from logbook import Logger
 commands = set()
 
@@ -125,6 +127,16 @@ class RollBot:
                     #     mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
                     if source_nick != "TagChatBot":
                         mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
+                    while tell_message.contains(Query().target.test(lambda s: s.lower() == source_nick.lower())) and \
+                                    message_dict['destination'] == "#TagProMods":
+                        name = tell_message.get(Query().target.test(lambda s: s.lower() == source_nick.lower()))
+                        date_remove = name['date']
+                        self.send_message(source_nick,
+                                          "{}, {} left a message: \"{}\"".format(source_nick, name['source'],
+                                                                                 name['message']))
+                        tell_message.remove(Query().date.test(lambda s: s.lower() == date_remove.lower()))
+                        time.sleep(.1)
+
 
                 if message_dict['type'] == "001":  # Registration confirmation message
                     self.registered = True
@@ -253,6 +265,23 @@ class RollBot:
             humantime = timeseen.humanize()
             return "{} was seen {} ({}) saying {}".format(name,humantime, formattime, mods[name]["message"])
 
+    @command
+    def tell(self, hostmask, source, reply_to, *args):
+        target = args[0]
+        message = ' '.join(args[1:])
+        # mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
+        # tell_message[target] = {"source":source, "message":message, "date":str(arrow.utcnow())}
+        if tell_message.search(Query().target.test(lambda s: s.lower() == target.lower)):
+            nick = tell_message.get(Query().target.test(lambda s: s.lower() == target.lower()))
+            if tell_message.count(Query().source.test(lambda s: s.lower() == target.lower())) < 5 and target == nick[
+                'target']:
+                tell_message.insert(
+                        {"target": target, "message": message, 'date': str(arrow.utcnow()), 'source': source})
+                return "Ok! I'll pass that on when they become active"
+            else:
+                return "WTF do u need to message them so much for"
+            tell_message.insert({"target": target, "message": message, 'date': str(arrow.utcnow()), 'source': source})
+            return "Ok! I'll pass that on when they become active"
 
     @command
     def optin(self, hostmask, source, reply_to, *args):
