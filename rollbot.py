@@ -15,7 +15,6 @@ from tinydb import TinyDB, Query
 
 
 mods = JSONDict("mods.json")
-irc_track = JSONDict('modlist.json')
 tell_message = TinyDB('tell.json')
 
 
@@ -76,7 +75,7 @@ class RollBot:
     def join_channel(self, channel):
         if channel:
             message_template = "JOIN {}"
-        self.send_raw(message_template.format(channel))
+            self.send_raw(message_template.format(channel))
 
     def leave_channel(self, channel):
         if channel in self.channels:
@@ -130,7 +129,7 @@ class RollBot:
                     if message_dict['destination'] == '#TagProMods':
                         mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
                     else:
-                        return
+                        continue  # u dork
                     while tell_message.contains(Query().target.test(lambda s: s.lower() == source_nick.lower())) and message_dict['destination'] == "#TagProMods":
                         name = tell_message.get(Query().target.test(lambda s: s.lower() == source_nick.lower()))
                         date_remove = name['date']
@@ -195,11 +194,13 @@ class RollBot:
     # Commands
 
     @command
-    def track(self, hostmask, source, replay_to, *args):
-        time = str(arrow.utcnow().replace(weeks=-2))
-        time = arrow.get(time)
-        inactive_mods = [x for x in irc_track if x not in mods or arrow.get(mods[x]['date']) < time]
-        return 'mods inactive for two weeks: {}'.format(inactive_mods)
+    def track(self, hostmask, source, reply_to, *args):
+        with open('modlist.json') as f:
+            irc_track = json.load(f)
+            time = arrow.get((arrow.utcnow().replace(weeks=-2)))
+            inactive_mods = [x for x in irc_track if x not in mods or arrow.get(mods[x]['date']) < time]
+            inactive_mods = ' '.join(inactive_mods)
+            return 'mods inactive for two weeks: {}'.format(inactive_mods)
 
     @command
     def commands(self, hostmask, source, reply_to, *args):
