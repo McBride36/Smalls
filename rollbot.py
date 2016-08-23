@@ -199,7 +199,7 @@ class RollBot:
         time = str(arrow.utcnow().replace(weeks=-2))
         time = arrow.get(time)
         inactive_mods = [x for x in irc_track if x not in mods or arrow.get(mods[x]['date']) < time]
-        print(inactive_mods)
+        return 'mods inactive for two weeks: {}'.format(inactive_mods)
 
     @command
     def commands(self, hostmask, source, reply_to, *args):
@@ -334,7 +334,7 @@ class RollBot:
             if ircmsg.find('+{}'.format(source)) != -1:
                 self.send_raw("PRIVMSG Chanserv :devoice #TPmods {}".format(source))
                 if source.lower() in ['cignul9']:
-                    return "Eat my ass {}".format(source)
+                    return "Eat my shorts {}".format(source)
                 else: return "You are now off {}, {}.".format(duty, source)
             elif ircmsg.find('{}'.format(source)) != -1:
                 return "You are already off {}, {}.".format(duty, source)
