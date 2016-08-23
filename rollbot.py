@@ -15,6 +15,7 @@ from tinydb import TinyDB, Query
 
 
 mods = JSONDict("mods.json")
+irc_track = JSONDict('modlist.json')
 tell_message = TinyDB('tell.json')
 
 
@@ -125,8 +126,11 @@ class RollBot:
                     self.handle_message(hostmask, source_nick, message_dict['destination'], message_dict['message'])
                     # if source_nick not in mods:
                     #     mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
-                    if source_nick != "TagChatBot":
+                    # if source_nick != "TagChatBot":
+                    if message_dict['destination'] == '#TagProMods':
                         mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
+                    else:
+                        return
                     while tell_message.contains(Query().target.test(lambda s: s.lower() == source_nick.lower())) and message_dict['destination'] == "#TagProMods":
                         name = tell_message.get(Query().target.test(lambda s: s.lower() == source_nick.lower()))
                         date_remove = name['date']
@@ -189,6 +193,13 @@ class RollBot:
         self.last_ping = time.time()
 
     # Commands
+
+    @command
+    def track(self, hostmask, source, replay_to, *args):
+        time = str(arrow.utcnow().replace(weeks=-2))
+        time = arrow.get(time)
+        inactive_mods = [x for x in irc_track if x not in mods or arrow.get(mods[x]['date']) < time]
+        print(inactive_mods)
 
     @command
     def commands(self, hostmask, source, reply_to, *args):
@@ -268,13 +279,12 @@ class RollBot:
         message = ' '.join(args[1:])
         #mods[source_nick] = {"date":str(arrow.utcnow()), "message":message_dict['message'], "channel":message_dict['destination']}
         # tell_message[target] = {"source":source, "message":message, "date":str(arrow.utcnow())}
-        if tell_message.search(Query().target.test(lambda s: s.lower() == target.lower)):
+        # if tell_message.search(Query().target.test(lambda s: s.lower() == target.lower)):
+        if target.lower() == "Smalls":
+            return "Don't be a weenus"
             nick = tell_message.get(Query().target.test(lambda s: s.lower() == target.lower()))
-            pass
-        if True:
-            nick = tell_message.get(Query().target.test(lambda s: s.lower() == target.lower()))
-            if tell_message.count(Query().target.test(lambda s: s.lower() == target.lower()) & Query().source.test(lambda s: s.lower() == source.lower())) <= 6:
-                tell_message.insert({"target":target,"message":message, 'date':str(arrow.utcnow()), 'source':source})
+        if tell_message.count(Query().target.test(lambda s: s.lower() == target.lower()) & Query().source.test(lambda s: s.lower() == source.lower())) <= 4:
+            tell_message.insert({"target":target,"message":message, 'date':str(arrow.utcnow()), 'source':source})
             return "Ok! I'll pass that on when they become active"
         else:
             return "U message that person like wayyy too much"
